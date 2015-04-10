@@ -215,9 +215,8 @@ namespace FluentAssertions.Types
         }
 
         /// <summary>
-        /// Asserts that the current type does not expose a property named <paramref name="name"/>.
+        /// Asserts that the current <see cref="Type"/> does not expose a property named <paramref name="name"/>.
         /// </summary>
-        /// <param name="typeAssertions">The TypeAssertion we are extending.</param>
         /// <param name="because">A formatted phrase as is supported by <see cref="M:System.String.Format(System.String,System.Object[])"/> explaining why the assertion
         ///             is needed. If the phrase does not start with the word <i>because</i>, it is prepended automatically.</param>
         /// <param name="reasonArgs">Zero or more objects to format using the placeholders in <see cref="!:because"/>.</param>
@@ -234,6 +233,52 @@ namespace FluentAssertions.Types
             Execute.Assertion.ForCondition(propertyInfo == null)
                 .BecauseOf(because, reasonArgs)
                 .FailWith(failureMessage);
+
+            return new AndConstraint<TypeAssertions>(this);
+        }
+
+        /// <summary>
+        /// Asserts that the current <see cref="Type"/> has a property with the expected access modifier.
+        /// </summary>
+        /// <param name="setAccessModifier">Setter access modifier. Null if not settable.</param>
+        /// <param name="getAccessModifier">Getter access modifier. Null if not gettable.</param>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="because">A formatted phrase as is supported by <see cref="M:System.String.Format(System.String,System.Object[])"/> explaining why the assertion
+        ///             is needed. If the phrase does not start with the word <i>because</i>, it is prepended automatically.</param>
+        /// <param name="reasonArgs">Zero or more objects to format using the placeholders in <see cref="!:because"/>.</param>
+        /// <param name="propertyType">The type of the indexer</param>
+        public AndConstraint<TypeAssertions> HaveProperty(CSharpAccessModifiers? getAccessModifier, CSharpAccessModifiers? setAccessModifier, Type propertyType, string name, string because = "", params object[] reasonArgs)
+        {
+            PropertyInfo propertyInfo = Subject.GetProperty(
+                name,
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+            string propertyName = String.Format("{0}.{1}", Subject, name);
+            string propertyDescription = String.Format("{0} {1}", propertyType.Name, propertyName);
+
+            Execute.Assertion.ForCondition(propertyInfo != null)
+                .BecauseOf(because, reasonArgs)
+                .FailWith("Expected property " + propertyDescription + " to exist{reason}, but it does not.");
+
+            propertyInfo.Should().Return(propertyType, because, reasonArgs);
+
+            if (getAccessModifier.HasValue)
+            {
+                propertyInfo.Should().BeReadable(getAccessModifier.Value, because, reasonArgs);
+            }
+            else
+            {
+                propertyInfo.Should().NotBeReadable(because, reasonArgs);
+            }
+
+            if (setAccessModifier.HasValue)
+            {
+                propertyInfo.Should().BeWritable(setAccessModifier.Value, because, reasonArgs);
+            }
+            else
+            {
+                propertyInfo.Should().NotBeWritable(because, reasonArgs);
+            }
 
             return new AndConstraint<TypeAssertions>(this);
         }

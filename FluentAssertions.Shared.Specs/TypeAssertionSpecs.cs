@@ -1,5 +1,5 @@
 using System;
-
+using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
 using FluentAssertions.Types;
 
@@ -77,7 +77,7 @@ namespace FluentAssertions.Specs
             // Assert
             //-------------------------------------------------------------------------------------------------------------------
 
-            act.ShouldThrow<AssertFailedException>().WithMessage(
+            act.ShouldThrow<AssertionFailedException>().WithMessage(
                 "Expected type to be FluentAssertions.Specs.ClassWithoutAttribute" +
                     " because we want to test the error message, but found FluentAssertions.Specs.ClassWithAttribute.");
         }
@@ -664,6 +664,213 @@ namespace FluentAssertions.Specs
         }
 
         [TestMethod]
+        public void When_asserting_a_type_that_has_a_property_does_have_that_property_it_should_not_throw()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithMembers);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveProperty(CSharpAccessModifiers.Public, CSharpAccessModifiers.Public, typeof(string), "PublicProperty", "because it does");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldNotThrow();
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_does_not_have_a_property_does_have_that_property_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithMembers);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveProperty(CSharpAccessModifiers.Public, CSharpAccessModifiers.Public, typeof(string), "NonExistantProperty", "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertionFailedException>()
+                .WithMessage("Expected property String FluentAssertions.Specs.ClassWithMembers.NonExistantProperty to exist because we want to test the error message, but it does not.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_property_with_no_getter_does_have_that_has_a_public_readable_property_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithMembers);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveProperty(CSharpAccessModifiers.Public, CSharpAccessModifiers.Public, typeof(string), "PublicWriteOnlyProperty", "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertionFailedException>()
+                .WithMessage("Expected property PublicWriteOnlyProperty to have a setter because we want to test the error message.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_private_readable_property_does_have_that_property_with_public_getter_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithMembers);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveProperty(CSharpAccessModifiers.Public, CSharpAccessModifiers.Public, typeof(string), "PublicWritePrivateReadProperty", "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertionFailedException>()
+                .WithMessage("Expected property PublicWritePrivateReadProperty to have a setter because we want to test the error message.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_property_with_no_getter_does_have_that_property_with_no_getter_it_should_not_throw()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithMembers);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveProperty(null, CSharpAccessModifiers.Public, typeof(string), "PublicWriteOnlyProperty", "because it does");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldNotThrow("Because it does");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_readable_property_does_have_that_property_with_no_getter_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithMembers);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveProperty(null, null, typeof(string), "PublicReadOnlyProperty", "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertFailedException>()
+                .WithMessage("Expected property PublicReadOnlyProperty not to have a getter because we want to test the error message.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_public_readonly_property_does_have_that_property_with_a_setter_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithMembers);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveProperty(CSharpAccessModifiers.Public, CSharpAccessModifiers.Public, typeof(string), "PublicReadOnlyProperty", "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertionFailedException>()
+                .WithMessage("Expected property PublicReadOnlyProperty to have a setter because we want to test the error message.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_property_with_a_private_setter_does_have_that_property_with_a_public_setter_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithMembers);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveProperty(CSharpAccessModifiers.Public, CSharpAccessModifiers.Public, typeof(string), "PublicReadPrivateWriteProperty", "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertionFailedException>()
+                .WithMessage("Expected property PublicReadPrivateWriteProperty to have a Public setter because we want to test the error message.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_property_with_no_setter_does_have_that_property_with_no_setter_it_should_not_throw()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithMembers);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveProperty(CSharpAccessModifiers.Public, null, typeof(string), "PublicReadOnlyProperty", "because it does");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldNotThrow("Because it does");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_property_with_a_setter_does_have_that_property_with_no_setter_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithMembers);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveProperty(null, null, typeof(string), "PublicWriteOnlyProperty", "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertFailedException>()
+                .WithMessage("Expected property PublicWriteOnlyProperty not to have a getter because we want to test the error message.");
+        }
+
+        [TestMethod]
         public void When_asserting_a_selection_of_types_with_unexpected_attribute_property_it_should_throw()
         {
             //-------------------------------------------------------------------------------------------------------------------
@@ -738,6 +945,14 @@ namespace FluentAssertions.Specs
     public class ClassWithMembers
     {
         public string PublicProperty { get; set; }
+
+        public string PublicReadOnlyProperty { get { return null; } }
+
+        public string PublicReadPrivateWriteProperty { get { return null; } private set { } }
+
+        public string PublicWriteOnlyProperty { set { } }
+
+        public string PublicWritePrivateReadProperty { set { } private get{ return null; } }
     }
 
     public class ClassWithoutMembers { }

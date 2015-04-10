@@ -114,6 +114,7 @@ namespace FluentAssertions.Specs
                 .WithMessage("Expected method set_ProtectedSetProperty to be Public because we want to test the failure, but it" +
                              " is Protected.");
         }
+
         [TestMethod]
         public void When_asserting_a_public_member_is_public_it_should_not_throw()
         {
