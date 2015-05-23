@@ -77,7 +77,7 @@ namespace FluentAssertions.Specs
             // Assert
             //-------------------------------------------------------------------------------------------------------------------
 
-            act.ShouldThrow<AssertionFailedException>().WithMessage(
+            act.ShouldThrow<AssertFailedException>().WithMessage(
                 "Expected type to be FluentAssertions.Specs.ClassWithoutAttribute" +
                     " because we want to test the error message, but found FluentAssertions.Specs.ClassWithAttribute.");
         }
@@ -700,7 +700,7 @@ namespace FluentAssertions.Specs
             //-------------------------------------------------------------------------------------------------------------------
             // Assert
             //-------------------------------------------------------------------------------------------------------------------
-            act.ShouldThrow<AssertionFailedException>()
+            act.ShouldThrow<AssertFailedException>()
                 .WithMessage("Expected property String FluentAssertions.Specs.ClassWithMembers.NonExistantProperty to exist because we want to test the error message, but it does not.");
         }
 
@@ -871,6 +871,234 @@ namespace FluentAssertions.Specs
         }
 
         [TestMethod]
+        public void When_asserting_a_type_that_has_a_indexer_does_have_that_indexer_it_should_not_throw()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithPublicRWIndexer);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveIndexer(CSharpAccessModifiers.Public, CSharpAccessModifiers.Public, typeof(string), new[] { typeof(int) }, "because it does");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldNotThrow();
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_indexer_does_have_that_indexer_with_different_parameters_it_should_not_throw()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithPublicRWIndexer);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveIndexer(CSharpAccessModifiers.Public, CSharpAccessModifiers.Public, typeof(string), new[] { typeof(string) }, "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertionFailedException>()
+                .WithMessage("Expected indexer String FluentAssertions.Specs.ClassWithoutMembers to exist because we want to test the error message, but it does not.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_does_not_have_a_indexer_does_have_that_indexer_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithoutMembers);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveIndexer(CSharpAccessModifiers.Public, CSharpAccessModifiers.Public, typeof(string), new Type[] { }, "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertionFailedException>()
+                .WithMessage("Expected indexer String FluentAssertions.Specs.ClassWithoutMembers to exist because we want to test the error message, but it does not.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_indexer_with_no_getter_does_have_that_has_a_public_readable_indexer_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithPublicWOIndexer);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveIndexer(CSharpAccessModifiers.Public, null, typeof(string), new[] { typeof(int) }, "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertionFailedException>()
+                .WithMessage("Expected indexer PublicWriteOnlyProperty to have a setter because we want to test the error message.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_private_readable_indexer_does_have_that_indexer_with_public_getter_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithPrivateReadPublicWriteIndexer);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveIndexer(CSharpAccessModifiers.Public, null, typeof(string), new[] { typeof(int) }, "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertionFailedException>()
+                .WithMessage("Expected indexer PublicWritePrivateReadProperty to have a setter because we want to test the error message.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_indexer_with_no_getter_does_have_that_indexer_with_no_getter_it_should_not_throw()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithPublicWOIndexer);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveIndexer(null, CSharpAccessModifiers.Public, typeof(string), new[] { typeof(int) }, "because it does");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldNotThrow("Because it does");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_readable_indexer_does_have_that_indexer_with_no_getter_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithPublicROIndexer);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveIndexer(null, null, typeof(string), new[] { typeof(int) }, "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertFailedException>()
+                .WithMessage("Expected indexer PublicReadOnlyProperty not to have a getter because we want to test the error message.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_public_readonly_indexer_does_have_that_indexer_with_a_setter_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithPublicROIndexer);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveIndexer(CSharpAccessModifiers.Public, CSharpAccessModifiers.Public, typeof(string), new[] { typeof(int) }, "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertionFailedException>()
+                .WithMessage("Expected indexer PublicReadOnlyProperty to have a setter because we want to test the error message.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_indexer_with_a_private_setter_does_have_that_indexer_with_a_public_setter_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithPublicReadPrivateWriteIndexer);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveIndexer(CSharpAccessModifiers.Public, CSharpAccessModifiers.Public, typeof(string), new[] { typeof(int) }, "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertionFailedException>()
+                .WithMessage("Expected indexer PublicReadPrivateWriteProperty to have a Public setter because we want to test the error message.");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_indexer_with_no_setter_does_have_that_indexer_with_no_setter_it_should_not_throw()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithPublicROIndexer);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveIndexer(CSharpAccessModifiers.Public, null, typeof(string), new[] { typeof(int) }, "because it does");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldNotThrow("Because it does");
+        }
+
+        [TestMethod]
+        public void When_asserting_a_type_that_has_a_indexer_with_a_setter_does_have_that_indexer_with_no_setter_it_should_throw_with_a_useful_message()
+        {
+            //-------------------------------------------------------------------------------------------------------------------
+            // Arrange
+            //-------------------------------------------------------------------------------------------------------------------
+            var type = typeof(ClassWithPublicWOIndexer);
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Act
+            //-------------------------------------------------------------------------------------------------------------------
+            Action act = () =>
+                type.Should().HaveIndexer(null, null, typeof(string), new[] { typeof(int) }, "because we want to test the error {0}", "message");
+
+            //-------------------------------------------------------------------------------------------------------------------
+            // Assert
+            //-------------------------------------------------------------------------------------------------------------------
+            act.ShouldThrow<AssertFailedException>()
+                .WithMessage("Expected indexer PublicWriteOnlyProperty not to have a getter because we want to test the error message.");
+        }
+
+        [TestMethod]
         public void When_asserting_a_selection_of_types_with_unexpected_attribute_property_it_should_throw()
         {
             //-------------------------------------------------------------------------------------------------------------------
@@ -953,6 +1181,31 @@ namespace FluentAssertions.Specs
         public string PublicWriteOnlyProperty { set { } }
 
         public string PublicWritePrivateReadProperty { private get{ return null; } set { } }
+    }
+
+    public class ClassWithPublicRWIndexer
+    {
+        public string this[int i] { get { return null; } set{} }
+    }
+
+    public class ClassWithPublicROIndexer
+    {
+        public string this[int i] { get { return null; } }
+    }
+
+    public class ClassWithPublicReadPrivateWriteIndexer
+    {
+        public string this[int i] { get { return null; } private set{} }
+    }
+
+    public class ClassWithPublicWOIndexer
+    {
+        public string this[int i] { set{} }
+    }
+
+    public class ClassWithPrivateReadPublicWriteIndexer
+    {
+        public string this[int i] { private get { return null; } set{} }
     }
 
     public class ClassWithoutMembers { }

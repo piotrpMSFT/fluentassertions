@@ -126,9 +126,9 @@ namespace FluentAssertions.Specs
             MethodInfo getMethod;
 
 #if NETFX_CORE || WINRT
-            getMethod = propertyInfo.SetMethod;
+            getMethod = propertyInfo.GetMethod;
 #else
-            getMethod = propertyInfo.GetSetMethod(true);
+            getMethod = propertyInfo.GetGetMethod(true);
 #endif
 
             //-------------------------------------------------------------------------------------------------------------------
@@ -154,9 +154,9 @@ namespace FluentAssertions.Specs
             MethodInfo getMethod;
 
 #if NETFX_CORE || WINRT
-            getMethod = propertyInfo.SetMethod;
+            getMethod = propertyInfo.GetMethod;
 #else
-            getMethod = propertyInfo.GetSetMethod(true);
+            getMethod = propertyInfo.GetGetMethod(true);
 #endif
 
             //-------------------------------------------------------------------------------------------------------------------

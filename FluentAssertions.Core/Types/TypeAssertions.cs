@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -263,6 +264,54 @@ namespace FluentAssertions.Types
                 .FailWith("Expected property " + propertyDescription + " to exist{reason}, but it does not.");
 
             propertyInfo.Should().Return(propertyType, because, reasonArgs);
+
+            if (getAccessModifier.HasValue)
+            {
+                propertyInfo.Should().BeReadable(getAccessModifier.Value, because, reasonArgs);
+            }
+            else
+            {
+                propertyInfo.Should().NotBeReadable(because, reasonArgs);
+            }
+
+            if (setAccessModifier.HasValue)
+            {
+                propertyInfo.Should().BeWritable(setAccessModifier.Value, because, reasonArgs);
+            }
+            else
+            {
+                propertyInfo.Should().NotBeWritable(because, reasonArgs);
+            }
+
+            return new AndConstraint<TypeAssertions>(this);
+        }
+
+        /// <summary>
+        /// Asserts that the current type exposes an indexer with parameters types of <paramref name="parameterTypes"/> and an expected access modifier.
+        /// </summary>
+        /// <param name="typeAssertions">The TypeAssertion we are extending.</param>
+        /// <param name="parameterTypes">The types of the indexer's parameters.</param>
+        /// <param name="because">A formatted phrase as is supported by <see cref="M:System.String.Format(System.String,System.Object[])"/> explaining why the assertion
+        ///             is needed. If the phrase does not start with the word <i>because</i>, it is prepended automatically.</param>
+        /// <param name="reasonArgs">Zero or more objects to format using the placeholders in <see cref="!:because"/>.</param>
+        /// <param name="indexerType">The type of the indexer</param>
+        /// <param name="setAccessModifier">Setter access modifier. Null if not settable.</param>
+        /// /// <param name="getAccessModifier">Getter access modifier. Null if not gettable.</param>
+        public AndConstraint<TypeAssertions> HaveIndexer(CSharpAccessModifiers? getAccessModifier,
+            CSharpAccessModifiers? setAccessModifier, Type indexerType, IEnumerable<Type> parameterTypes, string because = "",
+            params object[] reasonArgs)
+        {
+            var parameterTypesArray = parameterTypes as Type[] ?? parameterTypes.ToArray();
+
+            var propertyInfo =
+                Subject.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)
+                        .FirstOrDefault(p => p.IsIndexer() && 
+                                             p.GetIndexParameters().IsSameOrEqualTo(parameterTypesArray));
+
+            string propertyName = String.Format("{0}[{1}]", Subject, String.Join(", ", parameterTypes));
+            string propertyDescription = String.Format("{0} {1}", indexerType.Name, propertyName);
+            
+            propertyInfo.Should().Return(indexerType, because, reasonArgs);
 
             if (getAccessModifier.HasValue)
             {
